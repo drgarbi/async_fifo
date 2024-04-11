@@ -16,11 +16,11 @@ module dpram #(
     input [   Width-1:0] i_wr_data,
 
     // Read clock domain
-    input                 clk_rd,
-    input                 i_rd_en,
-    input                 i_rd_empty,
-    input  [PtrWidth-1:0] i_rd_ptr,
-    output [   Width-1:0] o_rd_data
+    input                       clk_rd,
+    input                       i_rd_en,
+    input                       i_rd_empty,
+    input        [PtrWidth-1:0] i_rd_ptr,
+    output logic [   Width-1:0] o_rd_data
 );
   logic [Width-1:0] ram[Depth];
   logic rst_sync0_n;
