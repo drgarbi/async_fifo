@@ -26,7 +26,7 @@ module dpram #(
   logic rst_sync_n;
 
   sync #(
-      .NSYNC(2)
+      .NSync(2)
   ) inst_rst_sync (
       .clk    (clk_rd),
       .rst_n  (rst_n),
@@ -44,7 +44,7 @@ module dpram #(
     if (!rst_sync_n) begin
       o_rd_data <= '0;
     end else if (i_rd_en && ~i_rd_empty) begin
-      o_rd_data <= ram[i_wr_ptr];
+      o_rd_data <= ram[i_rd_ptr];
     end
   end
 
