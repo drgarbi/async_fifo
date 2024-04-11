@@ -24,20 +24,16 @@ module dpram #(
 );
   reg [Width-1:0] ram[Depth];
 
-  always_ff @(posedge clk_wr or negedge rst_n) begin
-    if (!rst_n) i_wr_ptr <= '0;
-    else if (i_wr_en && ~i_wr_full) begin
-      i_wr_ptr      <= i_wr_ptr + 1'b1;
+  always_ff @(posedge clk_wr) begin
+    if (i_wr_en && ~i_wr_full) begin
       ram[i_wr_ptr] <= i_wr_data;
     end
   end
 
   always_ff @(posedge clk_rd or negedge rst_n) begin
     if (!rst_n) begin
-      i_rd_ptr  <= '0;
       o_rd_data <= '0;
     end else if (i_rd_en && ~i_rd_empty) begin
-      i_rd_ptr  <= i_rd_ptr + 1'b1;
       o_rd_data <= ram[i_wr_ptr];
     end
   end
