@@ -29,6 +29,8 @@ module async_fifo #(
     output o_rd_empty
 );
 
+  localparam integer PtrWidth = $clog2(Width);
+
   dpram #(
       .Depth(Depth),
       .Width(Width)
@@ -37,12 +39,12 @@ module async_fifo #(
       .clk_wr,
       .i_wr_en,
       .i_wr_full (o_wr_full),
-      .i_wr_ptr  ({Width{1'b0}}),
+      .i_wr_ptr  ({PtrWidth{1'b0}}),
       .i_wr_data,
       .clk_rd,
       .i_rd_en,
       .i_rd_empty(o_rd_empty),
-      .i_rd_ptr  ({Width{1'b0}}),
+      .i_rd_ptr  ({PtrWidth{1'b0}}),
       .o_rd_data
   );
 
