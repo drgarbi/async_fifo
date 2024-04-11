@@ -23,18 +23,16 @@ module dpram #(
     output logic [   Width-1:0] o_rd_data
 );
   logic [Width-1:0] ram[Depth];
-  logic rst_sync0_n;
-  logic rst_sync1_n;
+  logic rst_sync_n;
 
-  always_ff @(posedge clk_rd or negedge rst_n) begin
-    if (!rst_n) begin
-      rst_sync0_n <= 1'b0;
-      rst_sync1_n <= 1'b0;
-    end else begin
-      rst_sync0_n <= 1'b1;
-      rst_sync1_n <= rst_sync0_n;
-    end
-  end
+  sync #(
+      .NSYNC(2)
+  ) inst_rst_sync (
+      .clk    (clk_rd),
+      .rst_n  (rst_n),
+      .i_async(1'b1),
+      .o_sync (rst_sync_n)
+  );
 
   always_ff @(posedge clk_wr) begin
     if (i_wr_en && ~i_wr_full) begin
@@ -42,8 +40,8 @@ module dpram #(
     end
   end
 
-  always_ff @(posedge clk_rd or negedge rst_sync1_n) begin
-    if (!rst_sync1_n) begin
+  always_ff @(posedge clk_rd or negedge rst_sync_n) begin
+    if (!rst_sync_n) begin
       o_rd_data <= '0;
     end else if (i_rd_en && ~i_rd_empty) begin
       o_rd_data <= ram[i_wr_ptr];
