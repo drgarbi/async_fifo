@@ -38,9 +38,33 @@ module async_fifo_tb;
     clk_rd = ~clk_rd;
   end
 
+  task automatic writeData(logic [Width-1] data);
+    #2;
+    i_wr_en   = 1'b1;
+    i_wr_data = data;
+    #2;
+    i_wr_en = 1'b0;
+  endtask
+
   initial begin
-    clk_wr = 1'b0;
-    clk_rd = 1'b0;
+    $dumpfile("async_fifo_tb.vcd");
+    $dumpvars(0, async_fifo_tb);
+
+    $monitor("At time %0t, i_wr_data = 0x%h (%0d)", $time, i_wr_data, i_wr_data);
+
+    clk_wr    = 1'b0;
+    i_wr_en   = 1'b0;
+    i_wr_data = '0;
+    clk_rd    = 1'b0;
+    i_rd_en   = 1'b0;
+    rst_n     = 1'b0;
+    #2;
+    rst_n = 1'b1;
+    #2;
+
+    writeData($urandom);
+    writeData($urandom);
+    writeData($urandom);
 
     #100 $finish;
   end
