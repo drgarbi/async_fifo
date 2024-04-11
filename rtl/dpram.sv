@@ -31,7 +31,7 @@ module dpram #(
       rst_sync0_n <= 1'b0;
       rst_sync1_n <= 1'b0;
     end else begin
-      rst_sync0_n <= rst_n;
+      rst_sync0_n <= 1'b1;
       rst_sync1_n <= rst_sync0_n;
     end
   end
