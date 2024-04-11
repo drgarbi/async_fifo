@@ -4,7 +4,7 @@ setup:
 	@mkdir -p work
 
 iverilog: setup
-	iverilog -o work/async_fifo $(FLAGS) -f config/tb_filelist.f -f config/rtl_filelist.f
+	iverilog -o work/async_fifo $(FLAGS) -c config/filelist.f
 
 vvp: setup
-	vvp work/async_fifo
+	cd work && vvp async_fifo
