@@ -1,7 +1,7 @@
 // N-stage flip-flop synchronizer
 
 module sync #(
-    parameter NSYNC = 2
+    parameter integer NSYNC = 2
 ) (
     input  clk,
     input  rst_n,
