@@ -29,17 +29,20 @@ module async_fifo #(
     output o_rd_empty
 );
 
-  dpram inst_dpram (
+  dpram #(
+      .Depth(Depth),
+      .Width(Width)
+  ) inst_dpram (
       .rst_n,
       .clk_wr,
       .i_wr_en,
       .i_wr_full (o_wr_full),
-      .i_wr_ptr  (),
+      .i_wr_ptr  ({Width{1'b0}}),
       .i_wr_data,
       .clk_rd,
       .i_rd_en,
       .i_rd_empty(o_rd_empty),
-      .i_rd_ptr  (),
+      .i_rd_ptr  ({Width{1'b0}}),
       .o_rd_data
   );
 
