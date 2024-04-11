@@ -28,11 +28,11 @@ module dpram #(
 
   always_ff @(posedge clk_rd or negedge rst_n) begin
     if (!rst_n) begin
-        rst_sync0_n <= 1'b0;
-        rst_sync1_n <= 1'b0;
+      rst_sync0_n <= 1'b0;
+      rst_sync1_n <= 1'b0;
     end else begin
-        rst_sync0_n <= rst_n;
-        rst_sync1_n <= rst_sync0_n;
+      rst_sync0_n <= rst_n;
+      rst_sync1_n <= rst_sync0_n;
     end
   end
 
