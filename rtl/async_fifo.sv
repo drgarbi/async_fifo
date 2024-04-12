@@ -1,7 +1,7 @@
 // Asynchronous FIFO
 
 `ifndef DEPTH
-`define DEPTH 16
+`define DEPTH 4
 `endif  // DEPTH
 
 `ifndef WIDTH
@@ -30,20 +30,35 @@ module async_fifo #(
 );
   localparam integer PtrWidth = $clog2(Depth);
 
-  logic              rd_ptr_inc_en;
+  logic rst_rd_n;
   logic [PtrWidth:0] rd_bin_ptr;
-  logic [PtrWidth:0] rd_bin_ptr_comb;
   logic [PtrWidth:0] rd_gray_ptr;
   logic [PtrWidth:0] wr_gray_ptr_sync;
 
-  logic              wr_ptr_inc_en;
+  logic rst_wr_n;
   logic [PtrWidth:0] wr_bin_ptr;
-  logic [PtrWidth:0] wr_bin_ptr_comb;
   logic [PtrWidth:0] wr_gray_ptr;
   logic [PtrWidth:0] rd_gray_ptr_sync;
 
-  assign rd_ptr_inc_en = i_rd_en & ~o_empty;
-  assign wr_ptr_inc_en = i_wr_en & ~o_full;
+  sync #(
+      .NSync(2),
+      .Width(1)
+  ) inst_rst_rd_n (
+      .clk    (clk_rd),
+      .rst_n  (rst_n),
+      .i_async(1'b1),
+      .o_sync (rst_rd_n)
+  );
+
+  sync #(
+      .NSync(2),
+      .Width(1)
+  ) inst_rst_wr_n (
+      .clk    (clk_wr),
+      .rst_n  (rst_n),
+      .i_async(1'b1),
+      .o_sync (rst_wr_n)
+  );
 
   dpram #(
       .Depth(Depth),
@@ -62,33 +77,35 @@ module async_fifo #(
       .o_rd_data
   );
 
-  ptr_handler #(
+  read_control #(
       .PtrWidth(PtrWidth)
-  ) inst_rd_ptr_handler (
-      .clk           (clk_rd),
-      .rst_n,
-      .i_ptr_inc_en  (rd_ptr_inc_en),
-      .o_bin_ptr_comb(rd_bin_ptr_comb),
-      .o_bin_ptr     (rd_bin_ptr),
-      .o_gray_ptr    (rd_gray_ptr)
+  ) inst_read_control (
+      .clk_rd,
+      .rst_rd_n,
+      .i_rd_en,
+      .i_wr_gray_ptr_sync(wr_gray_ptr_sync),
+      .o_bin_ptr         (rd_bin_ptr),
+      .o_gray_ptr        (rd_gray_ptr),
+      .o_empty
   );
 
-  ptr_handler #(
+  write_control #(
       .PtrWidth(PtrWidth)
-  ) inst_wr_ptr_handler (
-      .clk           (clk_wr),
-      .rst_n,
-      .i_ptr_inc_en  (wr_ptr_inc_en),
-      .o_bin_ptr_comb(wr_bin_ptr_comb),
-      .o_bin_ptr     (wr_bin_ptr),
-      .o_gray_ptr    (wr_gray_ptr)
+  ) inst_write_control (
+      .clk_wr,
+      .rst_wr_n,
+      .i_wr_en,
+      .i_rd_gray_ptr_sync(rd_gray_ptr_sync),
+      .o_bin_ptr         (wr_bin_ptr),
+      .o_gray_ptr        (wr_gray_ptr),
+      .o_full
   );
 
   sync #(
       .NSync(2),
       .Width(PtrWidth + 1)
   ) inst_rd_gray_ptr_sync (
-      .clk    (clk_rd),
+      .clk    (clk_wr),
       .rst_n  (rst_n),
       .i_async(rd_gray_ptr),
       .o_sync (rd_gray_ptr_sync)
@@ -98,31 +115,10 @@ module async_fifo #(
       .NSync(2),
       .Width(PtrWidth + 1)
   ) inst_wr_gray_ptr_sync (
-      .clk    (clk_wr),
+      .clk    (clk_rd),
       .rst_n  (rst_n),
       .i_async(wr_gray_ptr),
       .o_sync (wr_gray_ptr_sync)
   );
-
-  empty_flag #(
-      .PtrWidth(PtrWidth)
-  ) inst_empty_flag (
-      .clk               (clk_rd),
-      .rst_n             (rst_n),
-      .i_rd_bin_ptr      (rd_bin_ptr_comb),
-      .i_wr_gray_ptr_sync(wr_gray_ptr_sync),
-      .o_empty
-  );
-
-  full_flag #(
-      .PtrWidth(PtrWidth)
-  ) inst_full_flag (
-      .clk               (clk_wr),
-      .rst_n             (rst_n),
-      .i_rd_gray_ptr_sync(rd_gray_ptr_sync),
-      .i_wr_bin_ptr      (wr_bin_ptr_comb),
-      .o_full
-  );
-
 
 endmodule

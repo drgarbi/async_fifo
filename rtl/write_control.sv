@@ -1,38 +1,40 @@
-module full_flag #(
+module write_control #(
     parameter integer PtrWidth = 2
 ) (
-    input                     clk,
-    input                     rst_n,
+    input                     clk_wr,
+    input                     rst_wr_n,
+    input                     i_wr_en,
     input        [PtrWidth:0] i_rd_gray_ptr_sync,
-    input        [PtrWidth:0] i_wr_bin_ptr,
+    output logic [PtrWidth:0] o_bin_ptr,
+    output logic [PtrWidth:0] o_gray_ptr,
     output logic              o_full
 );
-  logic rst_sync_n;
-  logic [PtrWidth:0] rd_bin_ptr_sync;
+  logic [PtrWidth:0] bin_ptr_d;
+  logic [PtrWidth:0] gray_ptr_d;
+  logic              full_d;
 
-  sync #(
-      .NSync(2)
-  ) inst_rst_sync (
-      .clk    (clk),
-      .rst_n  (rst_n),
-      .i_async(1'b1),
-      .o_sync (rst_sync_n)
-  );
+  assign full_d = gray_ptr_d ==
+      {~i_rd_gray_ptr_sync[PtrWidth:PtrWidth-1], i_rd_gray_ptr_sync[PtrWidth-2:0]};
 
-  gray2bin #(
-      .Width(PtrWidth + 1)
-  ) inst_gray2bin (
-      .i_gray(i_rd_gray_ptr_sync),
-      .o_bin (rd_bin_ptr_sync)
-  );
-
-  always_ff @(posedge clk or negedge rst_sync_n) begin
-    if (!rst_sync_n) begin
-      o_full <= 1'b0;
+  always_comb begin
+    if (i_wr_en & ~o_full) begin
+      bin_ptr_d  = o_bin_ptr + 1'b1;
+      gray_ptr_d = (bin_ptr_d >> 1) ^ bin_ptr_d;
     end else begin
-      o_full <= (i_wr_bin_ptr[PtrWidth] ^ rd_bin_ptr_sync[PtrWidth])
-      & i_wr_bin_ptr[PtrWidth-1:0] == rd_bin_ptr_sync[PtrWidth-1:0];
+      bin_ptr_d  = o_bin_ptr;
+      gray_ptr_d = o_gray_ptr;
     end
   end
 
+  always_ff @(posedge clk_wr or negedge rst_wr_n) begin
+    if (!rst_wr_n) begin
+      o_bin_ptr  <= '0;
+      o_gray_ptr <= '0;
+      o_full     <= 1'b0;
+    end else begin
+      o_bin_ptr  <= bin_ptr_d;
+      o_gray_ptr <= gray_ptr_d;
+      o_full     <= full_d;
+    end
+  end
 endmodule
