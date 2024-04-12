@@ -1,18 +1,10 @@
 // Asynchronous FIFO testbench
 `timescale 1ps / 1ps
 
-`ifndef DEPTH
-`define DEPTH 8
-`endif  // DEPTH
-
-`ifndef WIDTH
-`define WIDTH 8
-`endif  // WIDTH
-
 module async_fifo_tb;
 
-  localparam integer Width = `WIDTH;
-  localparam integer Depth = `DEPTH;
+  localparam integer Width = 8;
+  localparam integer Depth = 8;
 
 
   logic             rst_n;
@@ -36,7 +28,7 @@ module async_fifo_tb;
   );
 
   always #1 clk_wr = ~clk_wr;
-  always #1.5 clk_rd = ~clk_rd;
+  always #2 clk_rd = ~clk_rd;
 
   task automatic writeData(input logic [Width-1] data);
     i_wr_en   = 1'b1;
@@ -48,7 +40,7 @@ module async_fifo_tb;
   task automatic readData(output logic [Width-1] data);
     i_rd_en = 1'b1;
     data    = o_rd_data;
-    #3;
+    #4;
     i_rd_en = 1'b0;
   endtask
 
