@@ -64,13 +64,13 @@ module async_fifo #(
       .Depth(Depth),
       .Width(Width)
   ) inst_dpram (
-      .rst_n,
       .clk_wr,
       .i_wr_en,
       .i_wr_full (o_full),
       .i_wr_ptr  (wr_bin_ptr[PtrWidth-1:0]),
       .i_wr_data,
       .clk_rd,
+      .rst_rd_n,
       .i_rd_en,
       .i_rd_empty(o_empty),
       .i_rd_ptr  (rd_bin_ptr[PtrWidth-1:0]),
